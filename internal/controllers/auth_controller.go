@@ -1,42 +1,48 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
 	"ayuphone_api/internal/models"
-	"ayuphone_api/internal/services"
 	"ayuphone_api/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Register(c *gin.Context) {
-	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+func (ac ApiController) Register(c *gin.Context) {
+	var requestData struct {
+		Email       string `json:"email,omitempty"`                 // Can be either email or phone number
+		PhoneNumber string `json:"phone_number" binding:"required"` // Can be either email or phone number
+		Password    string `json:"password" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&requestData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Hash the password
-	hashedPassword, err := utils.HashPassword(user.Password)
+	hashedPassword, err := utils.HashPassword(requestData.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
 	}
-	user.Password = hashedPassword
+	requestData.Password = hashedPassword
 
-	fmt.Println(user)
-
-	if user.PhoneNumber != "" {
-		if err := utils.ValidatePhilippinePhoneNumber(user.PhoneNumber); err != nil {
+	if requestData.PhoneNumber != "" {
+		if err := utils.ValidatePhilippinePhoneNumber(requestData.PhoneNumber); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 	}
 
-	err = services.CreateUser(c, &user)
+	user := models.User{
+		Email:       requestData.Email,
+		PhoneNumber: requestData.PhoneNumber,
+		Password:    requestData.Password,
+	}
+
+	err = ac.DbService.CreateUser(c, &user)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
@@ -45,13 +51,13 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
 
-func Login(c *gin.Context) {
-	var loginData struct {
+func (ac ApiController) Login(c *gin.Context) {
+	var requestData struct {
 		Username string `json:"username" binding:"required"` // Can be either email or phone number
 		Password string `json:"password" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&loginData); err != nil {
+	if err := c.ShouldBindJSON(&requestData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
@@ -59,14 +65,14 @@ func Login(c *gin.Context) {
 	var user *models.User
 	var err error
 
-	if strings.Contains(loginData.Username, "@") {
-		user, err = services.GetUserByEmail(c, loginData.Username)
+	if strings.Contains(requestData.Username, "@") {
+		user, err = ac.DbService.GetUserByEmail(c, requestData.Username)
 	} else {
-		if err = utils.ValidatePhilippinePhoneNumber(loginData.Username); err != nil {
+		if err = utils.ValidatePhilippinePhoneNumber(requestData.Username); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		user, err = services.GetUserByPhoneNumber(c, loginData.Username)
+		user, err = ac.DbService.GetUserByPhoneNumber(c, requestData.Username)
 	}
 
 	if err != nil {
@@ -75,7 +81,7 @@ func Login(c *gin.Context) {
 	}
 
 	// Validate the password
-	if !utils.CheckPasswordHash(loginData.Password, user.Password) {
+	if !utils.CheckPasswordHash(requestData.Password, user.Password) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}

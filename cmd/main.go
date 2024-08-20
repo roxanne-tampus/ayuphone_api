@@ -5,29 +5,31 @@ import (
 	"os"
 
 	"ayuphone_api/config"
+	"ayuphone_api/internal/controllers"
 	db "ayuphone_api/internal/db"
 	"ayuphone_api/internal/routes"
+	"ayuphone_api/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Load environment variables
 	config.LoadConfig()
-
-	// Initialize database connection
-	err := db.InitDB()
+	dbClient, err := db.InitDB()
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
-	// Initialize Gin router
+	dbService := services.NewDBService(dbClient)
+
+	apiController := controllers.ApiController{
+		DbClient:  dbClient,
+		DbService: dbService,
+	}
+
 	router := gin.Default()
+	routes.SetupRoutes(router, apiController)
 
-	// Set up routes
-	routes.SetupRoutes(router)
-
-	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

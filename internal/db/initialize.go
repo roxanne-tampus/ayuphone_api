@@ -14,33 +14,35 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
-var DBClient *bun.DB
+type Client struct {
+	DB *bun.DB
+}
 
 // InitDB initializes the database connection.
-func InitDB() error {
+func InitDB() (*Client, error) {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		return fmt.Errorf("DATABASE_URL environment variable is not set")
+		return nil, fmt.Errorf("DATABASE_URL environment variable is not set")
 	}
 
 	// Create a new SQL database connection
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 	if sqldb == nil {
-		return fmt.Errorf("failed to create SQL database connection")
+		return nil, fmt.Errorf("failed to create SQL database connection")
 	}
 
 	// Initialize the global DB variable
-	DBClient = bun.NewDB(sqldb, pgdialect.New())
-	DBClient.AddQueryHook(bundebug.NewQueryHook(
+	db := bun.NewDB(sqldb, pgdialect.New())
+	db.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithEnabled(false), // Set to true to enable query logging
 		bundebug.FromEnv(""),
 	))
 
 	// Ping the database to ensure connection
-	if err := DBClient.PingContext(context.Background()); err != nil {
+	if err := db.PingContext(context.Background()); err != nil {
 		log.Printf("Failed to connect to the database: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &Client{DB: db}, nil
 }
