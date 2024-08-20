@@ -15,7 +15,7 @@ func CreateUser(ctx context.Context, user *models.User) error {
 	return nil
 }
 
-func GetUserByEmail(email string) (*models.User, error) {
+func GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	user := &models.User{}
 	err := db.DBClient.NewSelect().Model(user).Where("email = ?", email).Scan(context.Background())
 	if err != nil {
@@ -23,6 +23,12 @@ func GetUserByEmail(email string) (*models.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func GetUserByPhoneNumber(ctx context.Context, phoneNumber string) (*models.User, error) {
+	user := new(models.User)
+	err := db.DBClient.NewSelect().Model(user).Where("phone_number = ?", phoneNumber).Scan(ctx)
+	return user, err
 }
 
 func GetUserByID(ctx context.Context, userID int64) (*models.User, error) {

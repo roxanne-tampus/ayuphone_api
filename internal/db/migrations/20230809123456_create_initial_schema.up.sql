@@ -9,9 +9,10 @@ CREATE TABLE organizations (
 -- Create users table
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    phone_number VARCHAR(255) UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('superadmin', 'admin', 'customer', 'technician')),
+    role VARCHAR(50) NOT NULL CHECK (role IN ('superadmin', 'admin', 'customer', 'technician')) DEFAULT 'customer',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -21,7 +22,7 @@ CREATE TABLE organization_users (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'technician')),
+    role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'technician')) DEFAULT 'technician',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, organization_id)
