@@ -47,7 +47,7 @@ func (ac ApiController) Register(c *gin.Context) {
 		Password:    requestData.Password,
 	}
 
-	err = ac.DbService.CreateUser(c, &user)
+	_, err = ac.DbService.CreateUser(c, &user)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,22 +30,21 @@ func (ac ApiController) GetProfile(c *gin.Context) {
 	})
 }
 
-func (ac ApiController) CheckRole(c *gin.Context, role string) (bool, error) {
+func (ac ApiController) CheckRole(c *gin.Context, role string) bool {
 	userIdString, exists := c.Get("user_id")
 	if !exists {
-		return false, fmt.Errorf("Unauthorized")
+		return false
 	}
-
 	userID, _ := (userIdString).(int64)
 
 	// Fetch user from the database
 	user, err := ac.DbService.GetUserByID(c, userID)
 	if err != nil {
-		return false, fmt.Errorf("Failed to get user profile")
+		return false
 	}
 
 	if role != user.Role {
-		return false, fmt.Errorf("Unauthorized")
+		return false
 	}
-	return true, nil
+	return true
 }

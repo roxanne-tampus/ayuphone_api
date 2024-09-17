@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS organization_users (
     organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
     role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'technician')) DEFAULT 'technician',
     invited_by INT REFERENCES users(id),
-    status TEXT NOT NULL DEFAULT 'Pending',
+    status TEXT NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, organization_id)
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     device_id INT NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
     device_issue_id INT REFERENCES device_issues(id) ON DELETE CASCADE,
     note TEXT, -- Note column should allow NULL values by default
-    status TEXT NOT NULL DEFAULT 'Pending',
+    status TEXT NOT NULL DEFAULT 'pending',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

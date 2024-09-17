@@ -25,6 +25,12 @@ func SetupRoutes(router *gin.Engine, apiController controllers.ApiController) {
 	// SuperAdmin
 	protected.POST("/organizations", apiController.CreateOrganization)
 	protected.GET("/organizations", apiController.GetOrganizations)
+	protected.POST("/organizations/:organization_id/members", apiController.CreateOrganizationUser)
+	protected.GET("/organizations/:organization_id/members", apiController.GetOrganizationUsers)
+
+	// Admin
+	protected.POST("/organizations/:organization_id/technicians", apiController.GetOrganizations)
+	protected.GET("/organizations/:organization_id/technicians", apiController.GetOrganizations)
 
 	// Transactions
 	protected.POST("/transactions", apiController.CreateTransaction)
@@ -38,7 +44,4 @@ func SetupRoutes(router *gin.Engine, apiController controllers.ApiController) {
 	protected.POST("/transactions/:id/unassign/:techId", apiController.UnassignTechnician)
 	protected.GET("/transactions/:id/technicians", apiController.GetTechnicianAssignments)
 
-	// Admin
-	protected.POST("/organizations/:id/technicians", apiController.GetOrganizations)
-	protected.GET("/organizations/:id/technicians", apiController.GetOrganizations)
 }

@@ -6,12 +6,12 @@ import (
 	"fmt"
 )
 
-func (u DbService) CreateUser(ctx context.Context, user *models.User) error {
-	_, err := u.Client.DB.NewInsert().Model(user).Exec(ctx)
+func (u DbService) CreateUser(ctx context.Context, user *models.User) (int64, error) {
+	_, err := u.Client.DB.NewInsert().Model(user).Returning("id").Exec(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to create user: %w", err)
+		return 0, fmt.Errorf("failed to create user: %w", err)
 	}
-	return nil
+	return user.ID, nil
 }
 
 func (u DbService) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
@@ -38,4 +38,3 @@ func (u DbService) GetUserByID(ctx context.Context, userID int64) (*models.User,
 	}
 	return &user, nil
 }
-

@@ -18,9 +18,9 @@ func (ac ApiController) CreateOrganization(c *gin.Context) {
 		return
 	}
 
-	exists, err := ac.CheckRole(c, "superadmin")
+	exists := ac.CheckRole(c, "superadmin")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
 		return
 	}
 
@@ -28,7 +28,7 @@ func (ac ApiController) CreateOrganization(c *gin.Context) {
 		Name: requestData.Name,
 	}
 
-	organization, err = ac.DbService.CreateOrganization(c, organization)
+	organization, err := ac.DbService.CreateOrganization(c, organization)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create Organization"})
 		return
@@ -39,9 +39,9 @@ func (ac ApiController) CreateOrganization(c *gin.Context) {
 
 // GetOrganization retrieves a Organization by ID
 func (ac ApiController) GetOrganizations(c *gin.Context) {
-	exists, err := ac.CheckRole(c, "superadmin")
+	exists := ac.CheckRole(c, "superadmin")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
 		return
 	}
 
