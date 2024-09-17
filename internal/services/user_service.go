@@ -38,3 +38,4 @@ func (u DbService) GetUserByID(ctx context.Context, userID int64) (*models.User,
 	}
 	return &user, nil
 }
+

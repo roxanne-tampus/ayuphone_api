@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS organizations (
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
+    first_name VARCHAR(255), 
+    last_name VARCHAR(255), 
     email VARCHAR(255) UNIQUE,
     phone_number VARCHAR(255) UNIQUE,
     password VARCHAR(255) NOT NULL,
@@ -39,6 +41,8 @@ CREATE TABLE IF NOT EXISTS organization_users (
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
     role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'technician')) DEFAULT 'technician',
+    invited_by INT REFERENCES users(id),
+    status TEXT NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, organization_id)
@@ -49,7 +53,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
     customer_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     device_id INT NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
-    device_issue_id INT NOT NULL REFERENCES device_issues(id) ON DELETE CASCADE,
+    device_issue_id INT REFERENCES device_issues(id) ON DELETE CASCADE,
     note TEXT, -- Note column should allow NULL values by default
     status TEXT NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

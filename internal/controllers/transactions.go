@@ -11,27 +11,51 @@ import (
 // CreateTransaction handles the creation of a new transaction
 func (ac ApiController) CreateTransaction(c *gin.Context) {
 	var requestData struct {
-		CustomerId    int64 `json:"customer_id" binding:"required"` // Can be either email or phone number
-		DeviceId      int64 `json:"device_id" binding:"required"`
-		DeviceIssueId int64 `json:"device_issue_id" binding:"required"`
+		DeviceId      int64   `json:"device_id" binding:"required"`
+		DeviceIssueId *int64  `json:"device_issue_id,omitempty"`
+		Note          *string `json:"note,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&requestData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	transaction := &models.Transaction{
-		CustomerId:    requestData.CustomerId,
-		DeviceId:      requestData.DeviceId,
-		DeviceIssueId: requestData.DeviceIssueId,
+	customerId, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
 	}
 
-	if err := ac.DbService.CreateTransaction(c, transaction); err != nil {
+	transaction := &models.Transaction{
+		CustomerId:    customerId.(int64),
+		DeviceId:      requestData.DeviceId,
+		DeviceIssueId: requestData.DeviceIssueId,
+		Note:          requestData.Note,
+	}
+
+	transaction, err := ac.DbService.CreateTransaction(c, transaction)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create transaction"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, requestData)
+	c.JSON(http.StatusCreated, transaction)
+}
+
+// GetTransaction retrieves a transaction by ID
+func (ac ApiController) GetTransactions(c *gin.Context) {
+	user_id, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	transactions, err := ac.DbService.GetTransactions(c, user_id.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, transactions)
 }
 
 // GetTransaction retrieves a transaction by ID

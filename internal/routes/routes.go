@@ -18,7 +18,17 @@ func SetupRoutes(router *gin.Engine, apiController controllers.ApiController) {
 	protected.Use(middleware.AuthMiddleware)
 	protected.GET("/me", apiController.GetProfile)
 
+	// Devices
+	protected.GET("/devices", apiController.GetAllDevice)
+	protected.GET("/devices_issues", apiController.GetAllDeviceIssues)
+
+	// SuperAdmin
+	protected.POST("/organizations", apiController.CreateOrganization)
+	protected.GET("/organizations", apiController.GetOrganizations)
+
+	// Transactions
 	protected.POST("/transactions", apiController.CreateTransaction)
+	protected.GET("/transactions", apiController.GetTransactions)
 	protected.GET("/transactions/:id", apiController.GetTransaction)
 	protected.PUT("/transactions/:id", apiController.UpdateTransaction)
 	protected.DELETE("/transactions/:id", apiController.DeleteTransaction)
@@ -27,4 +37,8 @@ func SetupRoutes(router *gin.Engine, apiController controllers.ApiController) {
 	protected.POST("/transactions/:id/assign", apiController.AssignTechnician)
 	protected.POST("/transactions/:id/unassign/:techId", apiController.UnassignTechnician)
 	protected.GET("/transactions/:id/technicians", apiController.GetTechnicianAssignments)
+
+	// Admin
+	protected.POST("/organizations/:id/technicians", apiController.GetOrganizations)
+	protected.GET("/organizations/:id/technicians", apiController.GetOrganizations)
 }

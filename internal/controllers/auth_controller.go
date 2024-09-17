@@ -12,6 +12,9 @@ import (
 
 func (ac ApiController) Register(c *gin.Context) {
 	var requestData struct {
+		InviteCode  string `json:"invite_code,omitempty"`
+		FirstName   string `json:"first_name,omitempty"`
+		LastName    string `json:"last_name,omitempty"`
 		Email       string `json:"email,omitempty"`                 // Can be either email or phone number
 		PhoneNumber string `json:"phone_number" binding:"required"` // Can be either email or phone number
 		Password    string `json:"password" binding:"required"`
@@ -37,6 +40,8 @@ func (ac ApiController) Register(c *gin.Context) {
 	}
 
 	user := models.User{
+		FirstName:   requestData.FirstName,
+		LastName:    requestData.LastName,
 		Email:       requestData.Email,
 		PhoneNumber: requestData.PhoneNumber,
 		Password:    requestData.Password,
