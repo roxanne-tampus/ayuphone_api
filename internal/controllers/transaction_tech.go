@@ -10,24 +10,56 @@ import (
 
 // AssignTechnician assigns a technician to a transaction
 func (ac ApiController) AssignTechnician(c *gin.Context) {
+	var requestData struct {
+		TechnicianID int64 `json:"technician_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&requestData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
 		return
 	}
 
-	var assignment models.TransactionTechnician
-	if err := c.ShouldBindJSON(&assignment); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if !ac.CheckRole(c, "superadmin") && !ac.CheckRole(c, "admin") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	assignment.TransactionID = transactionID
+	userIdString, _ := c.Get("user_id")
+	currentUser := userIdString.(int64)
+
+	if ac.CheckRole(c, "admin") {
+		organizationUser, err := ac.DbService.GetOrganizationByUserID(c, 0, currentUser)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unauthorized"})
+			return
+		}
+
+		organizationUserTech, err := ac.DbService.GetOrganizationByUserID(c, 0, requestData.TechnicianID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unauthorized"})
+			return
+		}
+
+		if organizationUserTech.OrganizationID != organizationUser.OrganizationID {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unauthorized"})
+			return
+		}
+	}
+
+	var assignment = models.TransactionTechnician{
+		TransactionID: transactionID,
+		TechnicianID:  requestData.TechnicianID,
+	}
 
 	if err := ac.DbService.AssignTechnician(c, &assignment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign technician"})
 		return
 	}
+
 
 	c.JSON(http.StatusCreated, assignment)
 }

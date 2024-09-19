@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"ayuphone_api/internal/models"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -39,23 +40,47 @@ func (ac ApiController) CreateTransaction(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, transaction)
+	c.JSON(http.StatusCreated, fmt.Sprintf("Transaction ID: %d", transaction.ID))
 }
 
 // GetTransaction retrieves a transaction by ID
 func (ac ApiController) GetTransactions(c *gin.Context) {
+	filter := c.Query("filter")
 	user_id, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	transactions, err := ac.DbService.GetTransactions(c, user_id.(int64))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
-		return
+
+	if ac.CheckRole(c, "customer") {
+		transactions, err := ac.DbService.GetTransactions(c, user_id.(int64), "")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
+			return
+		}
+		c.JSON(http.StatusOK, transactions)
+
+	} else if ac.CheckRole(c, "technician") {
+		c.JSON(http.StatusOK, "Technicians are not authorized to view transactions")
+	} else if ac.CheckRole(c, "admin") {
+		if filter == "" {
+			filter = "pending"
+		}
+		transactions, err := ac.DbService.GetTransactions(c, 0, filter)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
+			return
+		}
+		c.JSON(http.StatusOK, transactions)
+	} else {
+		transactions, err := ac.DbService.GetTransactions(c, 0, "")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
+			return
+		}
+		c.JSON(http.StatusOK, transactions)
 	}
 
-	c.JSON(http.StatusOK, transactions)
 }
 
 // GetTransaction retrieves a transaction by ID

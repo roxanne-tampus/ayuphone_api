@@ -14,6 +14,13 @@ func (at DbService) AssignTechnician(ctx context.Context, transactionTechnician 
 		log.Printf("Error assigning technician: %v", err)
 		return err
 	}
+
+	err = at.UpdateTransactionStatus(ctx, transactionTechnician.TransactionID, "accepted")
+	if err != nil {
+		log.Printf("Error updating status: %v", err)
+		return err
+	}
+
 	return nil
 }
 

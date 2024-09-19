@@ -3,6 +3,7 @@ package services
 import (
 	"ayuphone_api/internal/models"
 	"context"
+	"fmt"
 	"log"
 )
 
@@ -17,8 +18,13 @@ func (t DbService) CreateOrganizationUser(ctx context.Context, organizationUser 
 }
 
 // GetOrganizationUser retrieves all OrganizationUsers
-func (t DbService) GetOrganizationUsers(ctx context.Context, organizationID int64) ([]models.OrganizationUserWithNames, error) {
+func (t DbService) GetOrganizationUsers(ctx context.Context, organizationID int64, filter string) ([]models.OrganizationUserWithNames, error) {
 	var organizationUsers []models.OrganizationUserWithNames
+	var filterQuery string
+
+	if filter != "" {
+		filterQuery = fmt.Sprintf("AND ou.role = '%s'", filter)
+	}
 
 	query := `
         SELECT 
@@ -37,9 +43,12 @@ func (t DbService) GetOrganizationUsers(ctx context.Context, organizationID int6
             users u ON u.id = ou.user_id
         WHERE 
             ou.organization_id = ?
+			` + filterQuery + `
         ORDER BY 
             ou.updated_at DESC
     `
+
+	fmt.Println(query)
 
 	// Execute the raw SQL query
 	rows, err := t.Client.DB.QueryContext(ctx, query, organizationID)
@@ -89,10 +98,18 @@ func (t DbService) GetOrganizationUserByID(ctx context.Context, id int64) (*mode
 
 func (t DbService) GetOrganizationByUserID(ctx context.Context, organizationId, userId int64) (*models.OrganizationUser, error) {
 	organizationUser := new(models.OrganizationUser)
-	err := t.Client.DB.NewSelect().Model(organizationUser).Where("organization_id = ? AND user_id = ?", organizationId, userId).Scan(ctx)
-	if err != nil {
-		log.Printf("Error retrieving organizationUser: %v", err)
-		return nil, err
+	if organizationId != 0 {
+		err := t.Client.DB.NewSelect().Model(organizationUser).Where("organization_id = ? AND user_id = ?", organizationId, userId).Scan(ctx)
+		if err != nil {
+			log.Printf("Error retrieving organizationUser: %v", err)
+			return nil, err
+		}
+	} else {
+		err := t.Client.DB.NewSelect().Model(organizationUser).Where("user_id = ?", userId).Scan(ctx)
+		if err != nil {
+			log.Printf("Error retrieving organizationUser: %v", err)
+			return nil, err
+		}
 	}
 	return organizationUser, nil
 }

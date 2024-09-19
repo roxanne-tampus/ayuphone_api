@@ -97,6 +97,7 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 
 // GetOrganizationUser retrieves a OrganizationUser by ID
 func (ac ApiController) GetOrganizationUsers(c *gin.Context) {
+	filter := c.Query("filter")
 	organizationID := c.Param("organization_id")
 	orgID, err := strconv.ParseInt(organizationID, 10, 64)
 	if err != nil {
@@ -120,7 +121,7 @@ func (ac ApiController) GetOrganizationUsers(c *gin.Context) {
 		}
 	}
 
-	organizations, err := ac.DbService.GetOrganizationUsers(c, orgID)
+	organizations, err := ac.DbService.GetOrganizationUsers(c, orgID, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve OrganizationUser"})
 		return

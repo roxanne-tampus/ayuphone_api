@@ -29,8 +29,6 @@ func SetupRoutes(router *gin.Engine, apiController controllers.ApiController) {
 	protected.GET("/organizations/:organization_id/members", apiController.GetOrganizationUsers)
 
 	// Admin
-	protected.POST("/organizations/:organization_id/technicians", apiController.GetOrganizations)
-	protected.GET("/organizations/:organization_id/technicians", apiController.GetOrganizations)
 
 	// Transactions
 	protected.POST("/transactions", apiController.CreateTransaction)
