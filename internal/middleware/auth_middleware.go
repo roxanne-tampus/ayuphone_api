@@ -11,7 +11,7 @@ import (
 func AuthMiddleware(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if !strings.HasPrefix(authHeader, "Bearer ") {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Invalid token")
 		c.Abort()
 		return
 	}
@@ -19,7 +19,7 @@ func AuthMiddleware(c *gin.Context) {
 	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 	claims, err := utils.ValidateToken(tokenString)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Invalid token")
 		c.Abort()
 		return
 	}

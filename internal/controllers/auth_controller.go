@@ -20,21 +20,21 @@ func (ac ApiController) Register(c *gin.Context) {
 		Password    string `json:"password" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 		return
 	}
 
 	// Hash the password
 	hashedPassword, err := utils.HashPassword(requestData.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to hash password")
 		return
 	}
 	requestData.Password = hashedPassword
 
 	if requestData.PhoneNumber != "" {
 		if err := utils.ValidatePhilippinePhoneNumber(requestData.PhoneNumber); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 			return
 		}
 	}
@@ -49,11 +49,11 @@ func (ac ApiController) Register(c *gin.Context) {
 
 	_, err = ac.DbService.CreateUser(c, &user)
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		utils.ErrorResponse(c, http.StatusConflict, "error: "+err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+	utils.JSONResponse(c, true, "User registered successfully", nil)
 }
 
 func (ac ApiController) Login(c *gin.Context) {
@@ -63,7 +63,7 @@ func (ac ApiController) Login(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid input")
 		return
 	}
 
@@ -74,29 +74,29 @@ func (ac ApiController) Login(c *gin.Context) {
 		user, err = ac.DbService.GetUserByEmail(c, requestData.Username)
 	} else {
 		if err = utils.ValidatePhilippinePhoneNumber(requestData.Username); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 			return
 		}
 		user, err = ac.DbService.GetUserByPhoneNumber(c, requestData.Username)
 	}
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Invalid credentials")
 		return
 	}
 
 	// Validate the password
 	if !utils.CheckPasswordHash(requestData.Password, user.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Invalid credentials")
 		return
 	}
 
 	// Generate JWT token
 	token, err := utils.GenerateToken(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to generate token")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	utils.JSONResponse(c, true, "User logged in successfully", gin.H{"token": token})
 }

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"ayuphone_api/internal/models"
+	"ayuphone_api/pkg/utils"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -17,13 +18,13 @@ func (ac ApiController) CreateTransaction(c *gin.Context) {
 		Note          *string `json:"note,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 		return
 	}
 
 	customerId, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Unauthorized")
 		return
 	}
 
@@ -36,11 +37,10 @@ func (ac ApiController) CreateTransaction(c *gin.Context) {
 
 	transaction, err := ac.DbService.CreateTransaction(c, transaction)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create transaction"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to create transaction")
 		return
 	}
-
-	c.JSON(http.StatusCreated, fmt.Sprintf("Transaction ID: %d", transaction.ID))
+	utils.JSONResponse(c, true, fmt.Sprintf("Transaction ID: %d", transaction.ID), nil)
 }
 
 // GetTransaction retrieves a transaction by ID
@@ -48,93 +48,90 @@ func (ac ApiController) GetTransactions(c *gin.Context) {
 	filter := c.Query("filter")
 	user_id, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Unauthorized")
 		return
 	}
 
 	if ac.CheckRole(c, "customer") {
 		transactions, err := ac.DbService.GetTransactions(c, user_id.(int64), "")
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
+			utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to retrieve transaction")
 			return
 		}
-		c.JSON(http.StatusOK, transactions)
-
+		utils.JSONResponse(c, true, "", transactions)
 	} else if ac.CheckRole(c, "technician") {
-		c.JSON(http.StatusOK, "Technicians are not authorized to view transactions")
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Technicians are not authorized to view transactions")
 	} else if ac.CheckRole(c, "admin") {
 		if filter == "" {
 			filter = "pending"
 		}
 		transactions, err := ac.DbService.GetTransactions(c, 0, filter)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
+			utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to retrieve transaction")
 			return
 		}
-		c.JSON(http.StatusOK, transactions)
+		utils.JSONResponse(c, true, "", transactions)
 	} else {
 		transactions, err := ac.DbService.GetTransactions(c, 0, "")
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
+			utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to retrieve transaction")
 			return
 		}
-		c.JSON(http.StatusOK, transactions)
+		utils.JSONResponse(c, true, "", transactions)
 	}
-
 }
 
 // GetTransaction retrieves a transaction by ID
 func (ac ApiController) GetTransaction(c *gin.Context) {
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Invalid transaction ID")
 		return
 	}
 
 	transaction, err := ac.DbService.GetTransactionByID(c, transactionID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to retrieve transaction")
+
 		return
 	}
-
-	c.JSON(http.StatusOK, transaction)
+	utils.JSONResponse(c, true, "", transaction)
 }
 
 // UpdateTransaction handles updating an existing transaction
 func (ac ApiController) UpdateTransaction(c *gin.Context) {
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Invalid transaction ID")
 		return
 	}
 
 	var transaction models.Transaction
 	if err := c.ShouldBindJSON(&transaction); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 		return
 	}
 
 	transaction.ID = transactionID
 	if err := ac.DbService.UpdateTransaction(c, &transaction); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update transaction"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to update transaction")
 		return
 	}
-
-	c.JSON(http.StatusOK, transaction)
+	utils.JSONResponse(c, true, "Transaction is updated", nil)
 }
 
 // DeleteTransaction handles the deletion of a transaction by ID
 func (ac ApiController) DeleteTransaction(c *gin.Context) {
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Invalid transaction ID")
 		return
 	}
 
 	if err := ac.DbService.DeleteTransaction(c, transactionID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete transaction"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to delete transaction")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Transaction deleted"})
+	utils.JSONResponse(c, true, "Transaction is deleted", nil)
 }

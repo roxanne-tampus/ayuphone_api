@@ -23,32 +23,32 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 	organizationID := c.Param("organization_id")
 	orgID, err := strconv.ParseInt(organizationID, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid organization ID"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid organization ID")
 		return
 	}
 
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 		return
 	}
 
 	// Hash the password
 	hashedPassword, err := utils.HashPassword(requestData.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to hash password")
 		return
 	}
 	requestData.Password = hashedPassword
 
 	if requestData.PhoneNumber != "" {
 		if err := utils.ValidatePhilippinePhoneNumber(requestData.PhoneNumber); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 			return
 		}
 	}
 
 	if !ac.CheckRole(c, "superadmin") && !ac.CheckRole(c, "admin") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Unauthorized")
 		return
 	}
 
@@ -58,7 +58,7 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 	if ac.CheckRole(c, "admin") {
 		_, err := ac.DbService.GetOrganizationByUserID(c, orgID, currentUser)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unauthorized"})
+			utils.ErrorResponse(c, http.StatusUnauthorized, "error: Unauthorized")
 			return
 		}
 	}
@@ -74,7 +74,7 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 
 	userId, err := ac.DbService.CreateUser(c, &user)
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 		return
 	}
 
@@ -88,11 +88,11 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 
 	orgUserSuccess, err := ac.DbService.CreateOrganizationUser(c, &organizationUser)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create OrganizationUser"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to create OrganizationUser")
 		return
 	}
 
-	c.JSON(http.StatusCreated, orgUserSuccess)
+	utils.JSONResponse(c, true, "Organization user "+requestData.FirstName+" is created successfully", orgUserSuccess)
 }
 
 // GetOrganizationUser retrieves a OrganizationUser by ID
@@ -101,12 +101,12 @@ func (ac ApiController) GetOrganizationUsers(c *gin.Context) {
 	organizationID := c.Param("organization_id")
 	orgID, err := strconv.ParseInt(organizationID, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid organization ID"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid organization ID")
 		return
 	}
 
 	if !ac.CheckRole(c, "superadmin") && !ac.CheckRole(c, "admin") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Unauthorized")
 		return
 	}
 
@@ -116,72 +116,70 @@ func (ac ApiController) GetOrganizationUsers(c *gin.Context) {
 	if ac.CheckRole(c, "admin") {
 		_, err := ac.DbService.GetOrganizationByUserID(c, orgID, currentUser)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unauthorized"})
+			utils.ErrorResponse(c, http.StatusUnauthorized, "error: Unauthorized")
 			return
 		}
 	}
 
 	organizations, err := ac.DbService.GetOrganizationUsers(c, orgID, filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve OrganizationUser"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to retrieve OrganizationUser")
 		return
 	}
 
-	c.JSON(http.StatusOK, organizations)
+	utils.JSONResponse(c, true, "", organizations)
 }
 
 // GetOrganizationUser retrieves a OrganizationUser by ID
 func (ac ApiController) GetOrganizationUser(c *gin.Context) {
-	OrganizationUserID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	organizationUserID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OrganizationUser ID"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid OrganizationUser ID")
 		return
 	}
 
-	OrganizationUser, err := ac.DbService.GetOrganizationUserByID(c, OrganizationUserID)
+	organizationUser, err := ac.DbService.GetOrganizationUserByID(c, organizationUserID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve OrganizationUser"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to retrieve OrganizationUser")
 		return
 	}
-
-	c.JSON(http.StatusOK, OrganizationUser)
+	utils.JSONResponse(c, true, "All organization users", organizationUser)
 }
 
 // UpdateOrganizationUser handles updating an existing OrganizationUser
 func (ac ApiController) UpdateOrganizationUser(c *gin.Context) {
-	OrganizationUserID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	organizationUserID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OrganizationUser ID"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid OrganizationUser ID")
 		return
 	}
 
-	var OrganizationUser models.OrganizationUser
-	if err := c.ShouldBindJSON(&OrganizationUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var organizationUser models.OrganizationUser
+	if err := c.ShouldBindJSON(&organizationUser); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 		return
 	}
 
-	OrganizationUser.ID = OrganizationUserID
-	if err := ac.DbService.UpdateOrganizationUser(c, &OrganizationUser); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update OrganizationUser"})
+	organizationUser.ID = organizationUserID
+	if err := ac.DbService.UpdateOrganizationUser(c, &organizationUser); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to update OrganizationUser")
 		return
 	}
-
-	c.JSON(http.StatusOK, OrganizationUser)
+	utils.JSONResponse(c, true, "Organization user updated", organizationUser)
 }
 
 // DeleteOrganizationUser handles the deletion of a OrganizationUser by ID
 func (ac ApiController) DeleteOrganizationUser(c *gin.Context) {
-	OrganizationUserID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	organizationUserID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OrganizationUser ID"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid OrganizationUser ID")
 		return
 	}
 
-	if err := ac.DbService.DeleteOrganizationUser(c, OrganizationUserID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete OrganizationUser"})
+	if err := ac.DbService.DeleteOrganizationUser(c, organizationUserID); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to delete OrganizationUser")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "OrganizationUser deleted"})
+	utils.JSONResponse(c, true, "Organization user deleted", nil)
 }

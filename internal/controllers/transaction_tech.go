@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"ayuphone_api/internal/models"
+	"ayuphone_api/pkg/utils"
 	"net/http"
 	"strconv"
 
@@ -14,17 +15,17 @@ func (ac ApiController) AssignTechnician(c *gin.Context) {
 		TechnicianID int64 `json:"technician_id" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
 		return
 	}
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid transaction ID")
 		return
 	}
 
 	if !ac.CheckRole(c, "superadmin") && !ac.CheckRole(c, "admin") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Unauthorized")
 		return
 	}
 
@@ -34,18 +35,18 @@ func (ac ApiController) AssignTechnician(c *gin.Context) {
 	if ac.CheckRole(c, "admin") {
 		organizationUser, err := ac.DbService.GetOrganizationByUserID(c, 0, currentUser)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unauthorized"})
+			utils.ErrorResponse(c, http.StatusInternalServerError, "error: Unauthorized")
 			return
 		}
 
 		organizationUserTech, err := ac.DbService.GetOrganizationByUserID(c, 0, requestData.TechnicianID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unauthorized"})
+			utils.ErrorResponse(c, http.StatusInternalServerError, "error: Unauthorized")
 			return
 		}
 
 		if organizationUserTech.OrganizationID != organizationUser.OrganizationID {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unauthorized"})
+			utils.ErrorResponse(c, http.StatusInternalServerError, "error: Unauthorized")
 			return
 		}
 	}
@@ -56,43 +57,42 @@ func (ac ApiController) AssignTechnician(c *gin.Context) {
 	}
 
 	if err := ac.DbService.AssignTechnician(c, &assignment); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign technician"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to assign technician")
 		return
 	}
 
-
-	c.JSON(http.StatusCreated, assignment)
+	utils.JSONResponse(c, true, "Technician assigned", assignment)
 }
 
 // UnassignTechnician unassigns a technician from a transaction
 func (ac ApiController) UnassignTechnician(c *gin.Context) {
 	techID, err := strconv.ParseInt(c.Param("techId"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid technician ID"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Invalid technician ID")
 		return
 	}
 
 	if err := ac.DbService.UnassignTechnician(c, techID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unassign technician"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to assign technician")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Technician unassigned"})
+	utils.JSONResponse(c, true, "Technician unassigned", nil)
 }
 
 // GetTechnicianAssignments retrieves the assignment history for a transaction
 func (ac ApiController) GetTechnicianAssignments(c *gin.Context) {
 	transactionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid transaction ID")
 		return
 	}
 
 	assignments, err := ac.DbService.GetTechnicianAssignments(c, transactionID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve assignments"})
+		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to assign technician")
 		return
 	}
 
-	c.JSON(http.StatusOK, assignments)
+	utils.JSONResponse(c, true, "Transaction assignment history", assignments)
 }
