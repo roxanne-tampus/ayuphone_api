@@ -11,7 +11,7 @@ func (ac ApiController) GetProfile(c *gin.Context) {
 	// Extract user ID from the context set by AuthMiddleware
 	userIdString, exists := c.Get("user_id")
 	if !exists {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Unauthorized")
+		utils.ErrorResponse(c, http.StatusUnauthorized, " Unauthorized")
 		return
 	}
 
@@ -20,7 +20,7 @@ func (ac ApiController) GetProfile(c *gin.Context) {
 	// Fetch user from the database
 	user, err := ac.DbService.GetUserByID(c, userID)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Failed to get user profile")
+		utils.ErrorResponse(c, http.StatusUnauthorized, " Failed to get user profile")
 		return
 	}
 

@@ -20,21 +20,21 @@ func (ac ApiController) Register(c *gin.Context) {
 		Password    string `json:"password" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Hash the password
 	hashedPassword, err := utils.HashPassword(requestData.Password)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to hash password")
+		utils.ErrorResponse(c, http.StatusInternalServerError, " Failed to hash password")
 		return
 	}
 	requestData.Password = hashedPassword
 
 	if requestData.PhoneNumber != "" {
 		if err := utils.ValidatePhilippinePhoneNumber(requestData.PhoneNumber); err != nil {
-			utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
+			utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
 	}
@@ -49,7 +49,7 @@ func (ac ApiController) Register(c *gin.Context) {
 
 	_, err = ac.DbService.CreateUser(c, &user)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusConflict, "error: "+err.Error())
+		utils.ErrorResponse(c, http.StatusConflict, err.Error())
 		return
 	}
 
@@ -63,7 +63,7 @@ func (ac ApiController) Login(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid input")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Invalid input")
 		return
 	}
 
@@ -74,27 +74,27 @@ func (ac ApiController) Login(c *gin.Context) {
 		user, err = ac.DbService.GetUserByEmail(c, requestData.Username)
 	} else {
 		if err = utils.ValidatePhilippinePhoneNumber(requestData.Username); err != nil {
-			utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
+			utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 			return
 		}
 		user, err = ac.DbService.GetUserByPhoneNumber(c, requestData.Username)
 	}
 
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Invalid credentials")
+		utils.ErrorResponse(c, http.StatusUnauthorized, " Invalid credentials")
 		return
 	}
 
 	// Validate the password
 	if !utils.CheckPasswordHash(requestData.Password, user.Password) {
-		utils.ErrorResponse(c, http.StatusUnauthorized, "error: Invalid credentials")
+		utils.ErrorResponse(c, http.StatusUnauthorized, " Invalid credentials")
 		return
 	}
 
 	// Generate JWT token
 	token, err := utils.GenerateToken(user)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Failed to generate token")
+		utils.ErrorResponse(c, http.StatusInternalServerError, " Failed to generate token")
 		return
 	}
 

@@ -15,13 +15,13 @@ func (ac ApiController) CreateOrganization(c *gin.Context) {
 		Name string `json:"name" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	exists := ac.CheckRole(c, "superadmin")
 	if !exists {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Unauthorized")
+		utils.ErrorResponse(c, http.StatusInternalServerError, " Unauthorized")
 		return
 	}
 
@@ -31,7 +31,7 @@ func (ac ApiController) CreateOrganization(c *gin.Context) {
 
 	organization, err := ac.DbService.CreateOrganization(c, organization)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to create Organization")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Failed to create Organization")
 		return
 	}
 
@@ -42,13 +42,13 @@ func (ac ApiController) CreateOrganization(c *gin.Context) {
 func (ac ApiController) GetOrganizations(c *gin.Context) {
 	exists := ac.CheckRole(c, "superadmin")
 	if !exists {
-		utils.ErrorResponse(c, http.StatusInternalServerError, "error: Unauthorized")
+		utils.ErrorResponse(c, http.StatusInternalServerError, " Unauthorized")
 		return
 	}
 
 	organizations, err := ac.DbService.GetOrganizations(c)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to retrieve Organization")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Failed to retrieve Organization")
 		return
 	}
 
@@ -59,13 +59,13 @@ func (ac ApiController) GetOrganizations(c *gin.Context) {
 func (ac ApiController) GetOrganization(c *gin.Context) {
 	organizationID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid Organization ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Invalid Organization ID")
 		return
 	}
 
 	organization, err := ac.DbService.GetOrganizationByID(c, organizationID)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to retrieve Organization")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Failed to retrieve Organization")
 		return
 	}
 
@@ -76,19 +76,19 @@ func (ac ApiController) GetOrganization(c *gin.Context) {
 func (ac ApiController) UpdateOrganization(c *gin.Context) {
 	organizationID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid Organization ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Invalid Organization ID")
 		return
 	}
 
 	var organization models.Organization
 	if err := c.ShouldBindJSON(&organization); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: "+err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	organization.ID = organizationID
 	if err := ac.DbService.UpdateOrganization(c, &organization); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to update Organization")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Failed to update Organization")
 		return
 	}
 
@@ -99,12 +99,12 @@ func (ac ApiController) UpdateOrganization(c *gin.Context) {
 func (ac ApiController) DeleteOrganization(c *gin.Context) {
 	organizationID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Invalid Organization ID")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Invalid Organization ID")
 		return
 	}
 
 	if err := ac.DbService.DeleteOrganization(c, organizationID); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, "error: Failed to delete OrganizationUser")
+		utils.ErrorResponse(c, http.StatusBadRequest, " Failed to delete OrganizationUser")
 		return
 	}
 

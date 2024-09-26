@@ -125,3 +125,200 @@ INSERT INTO device_issues (issue_description) VALUES
 ('Corrupted or missing data'),
 ('Slow charging'),
 ('Battery swelling');
+
+
+INSERT INTO regions (name) VALUES
+('Central Visayas');
+
+
+INSERT INTO provinces (name, region_id) VALUES
+('Cebu', 1);
+
+
+-- Insert Municipalities in Cebu Province
+INSERT INTO municipalities (name, province_id) VALUES
+('Cebu City', 1),
+('Lapu-Lapu City', 1),
+('Mandaue City', 1),
+('Talisay City', 1),
+('Carcar City', 1),
+('Danao City', 1),
+('Naga City', 1),
+('Bogo City', 1),
+('Toledo City', 1),
+('Argao', 1),
+('Barili', 1),
+('Boljoon', 1),
+('Consolacion', 1),
+('Cordova', 1),
+('Dalaguete', 1),
+('Dumanjug', 1),
+('Ginatilan', 1),
+('Liloan', 1),
+('Moalboal', 1),
+('Oslob', 1),
+('Pilar', 1),
+('Pinamungajan', 1),
+('Ronda', 1),
+('San Fernando', 1),
+('San Francisco', 1),
+('Santander', 1),
+('Sibonga', 1),
+('Sogod', 1),
+('Tabogon', 1),
+('Tuburan', 1),
+('Tudela', 1);
+
+
+-- Insert Barangays for Cebu Province Municipalities
+-- Cebu City
+INSERT INTO barangays (name, municipality_id) VALUES
+('Adlawon', 1),
+('Agsungot', 1),
+('Apas', 1),
+('Bacayan', 1),
+('Banilad', 1),
+('Basak Pardo', 1),
+('Basak San Nicolas', 1),
+('Bonbon', 1),
+('Budlaan', 1),
+('Busay', 1),
+('Calamba', 1),
+('Capitol Site', 1),
+('Carreta', 1),
+('Cogon Pardo', 1),
+('Guadalupe', 1),
+('Kasambagan', 1),
+('Labangon', 1),
+('Lahug', 1),
+('Mabolo', 1),
+('Pasil', 1),
+('Pung-ol Sibugay', 1),
+('Sambag I', 1),
+('Sambag II', 1),
+('Talamban', 1),
+('Tisa', 1);
+
+-- Lapu-Lapu City
+INSERT INTO barangays (name, municipality_id) VALUES
+('Agus', 2),
+('Babag', 2),
+('Basak', 2),
+('Buaya', 2),
+('Calawisan', 2),
+('Canjulao', 2),
+('Gun-ob', 2),
+('Ibo', 2),
+('Looc', 2),
+('Maribago', 2),
+('Marigondon', 2),
+('Pajac', 2),
+('Pajo', 2),
+('Poblacion', 2),
+('Subabasbas', 2);
+
+-- Mandaue City
+INSERT INTO barangays (name, municipality_id) VALUES
+('Alang-alang', 3),
+('Bakilid', 3),
+('Banilad', 3),
+('Basak', 3),
+('Cabancalan', 3),
+('Casili', 3),
+('Cubacub', 3),
+('Canduman', 3),
+('Guizo', 3),
+('Labogon', 3),
+('Looc', 3),
+('Mantuyong', 3),
+('Opao', 3),
+('Pakna-an', 3),
+('Subangdaku', 3);
+
+-- Talisay City
+INSERT INTO barangays (name, municipality_id) VALUES
+('Biasong', 4),
+('Bulacao', 4),
+('Cansojong', 4),
+('Dumlog', 4),
+('Lawaan I', 4),
+('Lawaan II', 4),
+('Lawaan III', 4),
+('Linao', 4),
+('Maghaway', 4),
+('Manipis', 4),
+('Mohon', 4),
+('Poblacion', 4),
+('San Isidro', 4),
+('Tabunok', 4),
+('Tangke', 4);
+
+-- Carcar City
+INSERT INTO barangays (name, municipality_id) VALUES
+('Bolocboloc', 5),
+('Buenavista', 5),
+('Calidngan', 5),
+('Can-asujan', 5),
+('Guadalupe', 5),
+('Liburon', 5),
+('Napo', 5),
+('Ocana', 5),
+('Perrelos', 5),
+('Poblacion I', 5),
+('Poblacion II', 5),
+('Poblacion III', 5),
+('Tuyom', 5),
+('Valladolid', 5);
+
+-- Argao
+INSERT INTO barangays (name, municipality_id) VALUES
+('Alambijud', 10),
+('Anajao', 10),
+('Bala-as', 10),
+('Balisong', 10),
+('Binlod', 10),
+('Bulasa', 10),
+('Capio-an', 10),
+('Conalum', 10),
+('Dagatan', 10),
+('Langtad', 10),
+('Mabasa', 10),
+('Mompeller', 10),
+('Poblacion', 10),
+('Talaytay', 10),
+('Tapon', 10),
+('Tiguib', 10);
+
+-- Danao City
+INSERT INTO barangays (name, municipality_id) VALUES
+('Danasan', 6),
+('Guinsay', 6),
+('Looc', 6),
+('Mantija', 6),
+('Poblacion', 6),
+('Santo Tomas', 6),
+('Suba', 6),
+('Taytay', 6);
+
+-- Oslob
+INSERT INTO barangays (name, municipality_id) VALUES
+('Aguinid', 20),
+('Bonbon', 20),
+('Calumpang', 20),
+('Cañang', 20),
+('Looc', 20),
+('Luka', 20),
+('Poblacion', 20),
+('Tan-awan', 20),
+('Tigbao', 20),
+('Tumalog', 20);
+
+-- Moalboal
+INSERT INTO barangays (name, municipality_id) VALUES
+('Basdiot', 19),
+('Bugho', 19),
+('Saavedra', 19),
+('Tuble', 19),
+('Balabagon', 19),
+('Poblacion East', 19),
+('Poblacion West', 19);

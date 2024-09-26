@@ -22,6 +22,13 @@ func SetupRoutes(router *gin.Engine, apiController controllers.ApiController) {
 	protected.GET("/devices", apiController.GetAllDevice)
 	protected.GET("/devices_issues", apiController.GetAllDeviceIssues)
 
+	// Philippine Addresses
+
+	protected.GET("/regions", apiController.GetRegions)
+	protected.GET("/regions/:region_id/provinces", apiController.GetProvinces)
+	protected.GET("/provinces/:province_id/municipalities", apiController.GetMunicipalities)
+	protected.GET("/municipalities/:municipality_id/barangays", apiController.GetBarangays)
+
 	// SuperAdmin
 	protected.POST("/organizations", apiController.CreateOrganization)
 	protected.GET("/organizations", apiController.GetOrganizations)
