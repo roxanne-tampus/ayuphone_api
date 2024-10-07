@@ -14,7 +14,12 @@ type DeviceIssue struct {
 	IssueDescription string `bun:"issue_description,notnull,unique" json:"description"`
 }
 
+type DeviceModel struct {
+	ID    int64  `json:"id"`
+	Model string `json:"model"`
+}
+
 type BrandModel struct {
-	Brand  string   `json:"brand"`
-	Models []string `json:"models"`
+	Brand  string        `json:"brand"`
+	Models []DeviceModel `json:"models"`
 }
