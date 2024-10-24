@@ -14,3 +14,13 @@ type Transaction struct {
 	CreatedAt     time.Time `bun:"created_at,notnull,default:current_timestamp" json:"created_at"`
 	UpdatedAt     time.Time `bun:"updated_at,notnull,default:current_timestamp" json:"updated_at"`
 }
+
+type TransactionWithDevice struct {
+	ID               int     `bun:"id,pk,autoincrement" json:"id"`
+	Status           string  `bun:"status,notnull,default:'Pending'" json:"status"`
+	PickupAddress    string  `bun:"pickup_address,notnull" json:"pickup_address"`
+	FullAddress      *string `bun:"full_address,notnull" json:"full_address"`
+	DeviceBrand      string  `bun:"brand,notnull" json:"brand"`
+	DeviceModel      string  `bun:"model,notnull" json:"model"`
+	IssueDescription string  `bun:"issue_description,notnull" json:"issue_description"`
+}

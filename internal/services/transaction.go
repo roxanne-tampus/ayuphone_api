@@ -17,8 +17,8 @@ func (t DbService) CreateTransaction(ctx context.Context, transaction *models.Tr
 }
 
 // GetTransaction retrieves all transactions
-func (t DbService) GetTransactions(ctx context.Context, userID int64, filter string) ([]models.Transaction, error) {
-	var transactions []models.Transaction
+func (t DbService) GetTransactions(ctx context.Context, userID int64, filter string) ([]models.TransactionWithDevice, error) {
+	var transactions []models.TransactionWithDevice
 	if userID == 0 {
 		if filter == "" {
 			err := t.Client.DB.NewSelect().Model(&transactions).Order("updated_at DESC").Scan(ctx)
@@ -34,7 +34,16 @@ func (t DbService) GetTransactions(ctx context.Context, userID int64, filter str
 			}
 		}
 	} else {
-		err := t.Client.DB.NewSelect().Model(&transactions).Where("customer_id = ?", userID).Order("updated_at DESC").Scan(ctx)
+
+		rawQuery := `
+		SELECT t.id, t.status, t.pickup_address, t.full_address, d.brand, d.model, di.issue_description
+		FROM transactions as t
+		LEFT JOIN devices AS d ON d.id = t.device_id
+		LEFT JOIN device_issues AS di ON di.id = t.device_issue_id
+		WHERE t.customer_id = ?
+		ORDER BY t.updated_at DESC;`
+
+		err := t.Client.DB.NewRaw(rawQuery, userID).Scan(ctx, &transactions)
 		if err != nil {
 			log.Printf("Error retrieving transactions for user %d: %v", userID, err)
 			return nil, err

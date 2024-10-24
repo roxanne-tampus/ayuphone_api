@@ -1,24 +1,27 @@
-# Makefile for managing migrations
+# Database connection settings
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
+GOOSE=go run github.com/pressly/goose/v3/cmd/goose
 
-# Configuration
-MIGRATE_PATH=$(HOME)/go/bin/migrate
+# Target to create a new migration
+new-migration:
+	@read -p "Enter migration name: " name; \
+	$(GOOSE) -dir $(MIGRATION_FOLDER) create $$name sql
 
-# Load environment variables
-export $(shell grep -v '^#' .env | xargs)
-
-# Commands
+# Target to apply migrations
 migrate-up:
-	$(MIGRATE_PATH) -path $(MIGRATE_DIR) -database $(DATABASE_URL) up
+	$(GOOSE) -dir $(MIGRATION_FOLDER) postgres $(DATABASE_URL) up
 
+# Target to rollback last migration
 migrate-down:
-	$(MIGRATE_PATH) -path $(MIGRATE_DIR) -database $(DATABASE_URL) down
+	$(GOOSE) -dir $(MIGRATION_FOLDER) postgres $(DATABASE_URL) down
 
+# Target to print migration status
 migrate-status:
-	$(MIGRATE_PATH) -path $(MIGRATE_DIR) -database $(DATABASE_URL) version
+	$(GOOSE) -dir $(MIGRATION_FOLDER) postgres $(DATABASE_URL) status
 
-# Aliases
-up: migrate-up
-down: migrate-down
-status: migrate-status
-
-.PHONY: migrate-up migrate-down migrate-status up down status
+# Target to fix $(GOOSE) migration version
+migrate-fix:
+	$(GOOSE) -dir $(MIGRATION_FOLDER) postgres $(DATABASE_URL) fix
