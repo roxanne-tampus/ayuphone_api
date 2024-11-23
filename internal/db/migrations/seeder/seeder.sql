@@ -676,21 +676,16 @@ INSERT INTO barangays (name, municipality_id) VALUES
 ('San Juan', 46), 
 ('San Vicente', 46);
 
-INSERT INTO users (first_name, last_name, email, password, role_id, address, phone_number) VALUES
-('Ayuphone', 'Super Admin', 'ayuphoneph@gmail.com', '$2a$14$N3S0JKnY2UBkk9pk0mX3B./IvQo1abuEQPYXnEv2Xnlq.lVbxn00y', 1, 'Cebu City', '09123456789');
-
-INSERT INTO users (first_name, last_name, email, password, role_id, address, phone_number) VALUES
-('Ayuphone', 'Admin', 'ayuphoneph_admin@gmail.com', '$2a$14$N3S0JKnY2UBkk9pk0mX3B./IvQo1abuEQPYXnEv2Xnlq.lVbxn00y', 2, 'Cebu City', '09123456781');
-
-INSERT INTO users (first_name, last_name, email, password, role_id, address, phone_number) VALUES
-('Ayuphone', 'Customer', 'ayuphoneph_customer@gmail.com', '$2a$14$N3S0JKnY2UBkk9pk0mX3B./IvQo1abuEQPYXnEv2Xnlq.lVbxn00y', 3, 'Cebu City', '09123456782');
-
-INSERT INTO users (first_name, last_name, email, password, role_id, address, phone_number) VALUES
-('Ayuphone', 'Technician', 'ayuphoneph_tech@gmail.com', '$2a$14$N3S0JKnY2UBkk9pk0mX3B./IvQo1abuEQPYXnEv2Xnlq.lVbxn00y', 4, 'Cebu City', '09123456783');
-
 -- Insert roles
 INSERT INTO roles (name) VALUES
 ('superadmin'),
 ('admin'),
 ('customer'),
 ('technician');
+
+-- Insert users
+INSERT INTO users (first_name, last_name, email, password, role_id, address, phone_number) VALUES
+('Ayuphone', 'Super Admin', 'ayuphoneph@gmail.com', '$2a$14$N3S0JKnY2UBkk9pk0mX3B./IvQo1abuEQPYXnEv2Xnlq.lVbxn00y', 1, 'Cebu City', '09123456789'),
+('Ayuphone', 'Admin', 'ayuphoneph_admin@gmail.com', '$2a$14$N3S0JKnY2UBkk9pk0mX3B./IvQo1abuEQPYXnEv2Xnlq.lVbxn00y', 2, 'Cebu City', '09123456782'),
+('Ayuphone', 'Customer', 'ayuphoneph_customer@gmail.com', '$2a$14$N3S0JKnY2UBkk9pk0mX3B./IvQo1abuEQPYXnEv2Xnlq.lVbxn00y', 3, 'Cebu City', '09123456781'),
+('Ayuphone', 'Technician', 'ayuphoneph_tech@gmail.com', '$2a$14$N3S0JKnY2UBkk9pk0mX3B./IvQo1abuEQPYXnEv2Xnlq.lVbxn00y', 4, 'Cebu City', '09123456783');
