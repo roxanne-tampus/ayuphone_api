@@ -23,7 +23,7 @@ func (t DbService) GetOrganizationUsers(ctx context.Context, organizationID int6
 	var filterQuery string
 
 	if filter != "" {
-		filterQuery = fmt.Sprintf("AND ou.role = '%s'", filter)
+		filterQuery = fmt.Sprintf("AND ou.role_id = '%s'", filter)
 	}
 
 	query := `
@@ -33,7 +33,7 @@ func (t DbService) GetOrganizationUsers(ctx context.Context, organizationID int6
             ou.id AS organization_user_id,
             ou.user_id,
             ou.organization_id,
-            ou.role,
+            ou.role_id,
             ou.status,
             ou.created_at,
 			ou.updated_at          
@@ -67,7 +67,7 @@ func (t DbService) GetOrganizationUsers(ctx context.Context, organizationID int6
 			&ou.OrganizationUser.ID,
 			&ou.OrganizationUser.UserID,
 			&ou.OrganizationUser.OrganizationID,
-			&ou.OrganizationUser.Role,
+			&ou.OrganizationUser.RoleID,
 			&ou.OrganizationUser.Status,
 			&ou.OrganizationUser.CreatedAt,
 			&ou.OrganizationUser.UpdatedAt,

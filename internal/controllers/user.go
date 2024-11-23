@@ -27,11 +27,11 @@ func (ac ApiController) GetProfile(c *gin.Context) {
 	utils.JSONResponse(c, true, "", gin.H{
 		"id":    user.ID,
 		"email": user.Email,
-		"role":  user.Role,
+		"role":  user.RoleID,
 	})
 }
 
-func (ac ApiController) CheckRole(c *gin.Context, role string) bool {
+func (ac ApiController) CheckRoleID(c *gin.Context, roleID int) bool {
 	userIdString, exists := c.Get("user_id")
 	if !exists {
 		return false
@@ -44,7 +44,7 @@ func (ac ApiController) CheckRole(c *gin.Context, role string) bool {
 		return false
 	}
 
-	if role != user.Role {
+	if roleID != user.RoleID {
 		return false
 	}
 	return true

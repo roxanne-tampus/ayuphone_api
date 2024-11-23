@@ -61,16 +61,16 @@ func (ac ApiController) GetTransactions(c *gin.Context) {
 		return
 	}
 
-	if ac.CheckRole(c, "customer") {
+	if ac.CheckRoleID(c, 3) {
 		transactions, err := ac.DbService.GetTransactions(c, user_id.(int64), "")
 		if err != nil {
 			utils.ErrorResponse(c, http.StatusInternalServerError, " Failed to retrieve transaction")
 			return
 		}
 		utils.JSONResponse(c, true, "", transactions)
-	} else if ac.CheckRole(c, "technician") {
+	} else if ac.CheckRoleID(c, 4) {
 		utils.ErrorResponse(c, http.StatusUnauthorized, " Technicians are not authorized to view transactions")
-	} else if ac.CheckRole(c, "admin") {
+	} else if ac.CheckRoleID(c, 2) {
 		if filter == "" {
 			filter = "pending"
 		}

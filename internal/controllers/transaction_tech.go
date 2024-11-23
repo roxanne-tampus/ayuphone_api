@@ -24,7 +24,7 @@ func (ac ApiController) AssignTechnician(c *gin.Context) {
 		return
 	}
 
-	if !ac.CheckRole(c, "superadmin") && !ac.CheckRole(c, "admin") {
+	if !ac.CheckRoleID(c, 1) && !ac.CheckRoleID(c, 2) {
 		utils.ErrorResponse(c, http.StatusInternalServerError, " Unauthorized")
 		return
 	}
@@ -32,7 +32,7 @@ func (ac ApiController) AssignTechnician(c *gin.Context) {
 	userIdString, _ := c.Get("user_id")
 	currentUser := userIdString.(int64)
 
-	if ac.CheckRole(c, "admin") {
+	if ac.CheckRoleID(c, 2) {
 		organizationUser, err := ac.DbService.GetOrganizationByUserID(c, 0, currentUser)
 		if err != nil {
 			utils.ErrorResponse(c, http.StatusInternalServerError, " Unauthorized")

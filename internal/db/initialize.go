@@ -1,16 +1,13 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
-	_ "github.com/lib/pq"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/pgdialect"
-	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/sqliteshim"
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
@@ -18,31 +15,48 @@ type Client struct {
 	DB *bun.DB
 }
 
-// InitDB initializes the database connection.
-func InitDB() (*Client, error) {
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		return nil, fmt.Errorf("DATABASE_URL environment variable is not set")
+func NewSQLiteDBClient() (Client, error) {
+	mode := os.Getenv("MODE")
+	var sqldb *sql.DB
+	var err error
+
+	if mode == "dev" {
+		dbPath := os.Getenv("SQLITE_DB_PATH")
+		if dbPath == "" {
+			dbPath = "internal/db/app.db"
+		}
+
+		sqldb, err = sql.Open(sqliteshim.ShimName, dbPath)
+		if err != nil {
+			return Client{}, err
+		}
+
+	} else {
+		databaseURL := os.Getenv("TURSO_DATABASE_URL")
+		authToken := os.Getenv("TURSO_AUTH_TOKEN")
+
+		if databaseURL == "" || authToken == "" {
+			return Client{}, fmt.Errorf("TURSO_DATABASE_URL or TURSO_AUTH_TOKEN not set")
+		}
+
+		// Set the auth token as a connection parameter
+		dsn := fmt.Sprintf("%s?authToken=%s", databaseURL, authToken)
+		sqldb, err = sql.Open("libsql", dsn)
+		if err != nil {
+			return Client{}, err
+		}
 	}
 
-	// Create a new SQL database connection
-	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
-	if sqldb == nil {
-		return nil, fmt.Errorf("failed to create SQL database connection")
+	// Verify the connection
+	if err = sqldb.Ping(); err != nil {
+		return Client{}, err
 	}
 
-	// Initialize the global DB variable
-	db := bun.NewDB(sqldb, pgdialect.New())
-	db.AddQueryHook(bundebug.NewQueryHook(
-		bundebug.WithEnabled(false), // Set to true to enable query logging
-		bundebug.FromEnv(""),
-	))
+	// Create a Bun DB instance
+	db := bun.NewDB(sqldb, sqlitedialect.New())
 
-	// Ping the database to ensure connection
-	if err := db.PingContext(context.Background()); err != nil {
-		log.Printf("Failed to connect to the database: %v", err)
-		return nil, err
-	}
+	// Print all queries to stdout
+	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 
-	return &Client{DB: db}, nil
+	return Client{DB: db}, nil
 }

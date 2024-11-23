@@ -19,7 +19,7 @@ func (ac ApiController) CreateOrganization(c *gin.Context) {
 		return
 	}
 
-	exists := ac.CheckRole(c, "superadmin")
+	exists := ac.CheckRoleID(c, 1)
 	if !exists {
 		utils.ErrorResponse(c, http.StatusInternalServerError, " Unauthorized")
 		return
@@ -40,7 +40,7 @@ func (ac ApiController) CreateOrganization(c *gin.Context) {
 
 // GetOrganization retrieves a Organization by ID
 func (ac ApiController) GetOrganizations(c *gin.Context) {
-	exists := ac.CheckRole(c, "superadmin")
+	exists := ac.CheckRoleID(c, 1)
 	if !exists {
 		utils.ErrorResponse(c, http.StatusInternalServerError, " Unauthorized")
 		return

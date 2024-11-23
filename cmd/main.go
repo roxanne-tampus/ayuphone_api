@@ -1,29 +1,28 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	"ayuphone_api/config"
 	"ayuphone_api/internal/controllers"
-	db "ayuphone_api/internal/db"
+	"ayuphone_api/internal/db"
 	"ayuphone_api/internal/routes"
 	"ayuphone_api/internal/services"
+	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	config.LoadConfig()
-	dbClient, err := db.InitDB()
+	dbClient, err := db.NewSQLiteDBClient()
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
-	dbService := services.NewDBService(dbClient)
+	dbService := services.NewDBService(&dbClient)
 
 	apiController := controllers.ApiController{
-		DbClient:  dbClient,
+		DbClient:  &dbClient,
 		DbService: dbService,
 	}
 

@@ -16,7 +16,7 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 		LastName    string `json:"last_name,omitempty"`
 		Email       string `json:"email,omitempty"`
 		PhoneNumber string `json:"phone_number" binding:"required"`
-		Role        string `json:"role" binding:"required"`
+		RoleID      int    `json:"role_id" binding:"required"`
 		Password    string `json:"password" binding:"required"`
 	}
 
@@ -47,7 +47,7 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 		}
 	}
 
-	if !ac.CheckRole(c, "superadmin") && !ac.CheckRole(c, "admin") {
+	if !ac.CheckRoleID(c, 1) && !ac.CheckRoleID(c, 2) {
 		utils.ErrorResponse(c, http.StatusUnauthorized, " Unauthorized")
 		return
 	}
@@ -55,7 +55,7 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 	userIdString, _ := c.Get("user_id")
 	currentUser := userIdString.(int64)
 
-	if ac.CheckRole(c, "admin") {
+	if ac.CheckRoleID(c, 2) {
 		_, err := ac.DbService.GetOrganizationByUserID(c, orgID, currentUser)
 		if err != nil {
 			utils.ErrorResponse(c, http.StatusUnauthorized, " Unauthorized")
@@ -68,7 +68,7 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 		LastName:    requestData.LastName,
 		Email:       requestData.Email,
 		PhoneNumber: requestData.PhoneNumber,
-		Role:        requestData.Role,
+		RoleID:      requestData.RoleID,
 		Password:    requestData.Password,
 	}
 
@@ -82,7 +82,7 @@ func (ac ApiController) CreateOrganizationUser(c *gin.Context) {
 		UserID:         userId,
 		OrganizationID: orgID,
 		InvitedBy:      &currentUser,
-		Role:           requestData.Role,
+		RoleID:         requestData.RoleID,
 		Status:         "approved",
 	}
 
@@ -105,7 +105,7 @@ func (ac ApiController) GetOrganizationUsers(c *gin.Context) {
 		return
 	}
 
-	if !ac.CheckRole(c, "superadmin") && !ac.CheckRole(c, "admin") {
+	if !ac.CheckRoleID(c, 1) && !ac.CheckRoleID(c, 2) {
 		utils.ErrorResponse(c, http.StatusUnauthorized, " Unauthorized")
 		return
 	}
@@ -113,7 +113,7 @@ func (ac ApiController) GetOrganizationUsers(c *gin.Context) {
 	userIdString, _ := c.Get("user_id")
 	currentUser := userIdString.(int64)
 
-	if ac.CheckRole(c, "admin") {
+	if ac.CheckRoleID(c, 2) {
 		_, err := ac.DbService.GetOrganizationByUserID(c, orgID, currentUser)
 		if err != nil {
 			utils.ErrorResponse(c, http.StatusUnauthorized, " Unauthorized")
