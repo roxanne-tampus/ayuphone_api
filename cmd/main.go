@@ -27,13 +27,22 @@ func main() {
 	}
 
 	router := gin.Default()
-	routes.SetupRoutes(router, apiController)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	if err := router.Run(":" + port); err != nil {
-		log.Fatal("Failed to run server: ", err)
-	}
+    // Configure CORS
+    router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"http://localhost:3000", "http://10.0.2.2:3000"},
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+    }))
+
+    routes.SetupRoutes(router, apiController)
+
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080"
+    }
+    if err := router.Run("0.0.0.0:" + port); err != nil {
+        log.Fatal("Failed to run server: ", err)
 }
