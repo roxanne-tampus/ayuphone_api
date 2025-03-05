@@ -24,9 +24,11 @@ func main() {
 	flag.Parse()
 
 	// Load environment variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+	if os.Getenv("RENDER") == "" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatalf("Error loading .env file: %v", err)
+		}
 	}
 
 	// Load environment variables
