@@ -13,7 +13,9 @@ import (
 )
 
 func main() {
-	config.LoadConfig()
+	if os.Getenv("RENDER") == "" {
+		config.LoadConfig()
+	}
 	dbClient, err := db.NewSQLiteDBClient()
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
