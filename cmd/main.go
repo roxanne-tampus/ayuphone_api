@@ -1,50 +1,56 @@
 package main
 
 import (
-    "ayuphone_api/config"
-    "ayuphone_api/internal/controllers"
-    "ayuphone_api/internal/db"
-    "ayuphone_api/internal/routes"
-    "ayuphone_api/internal/services"
-    "log"
-    "os"
+	"ayuphone_api/config"
+	"ayuphone_api/internal/controllers"
+	"ayuphone_api/internal/db"
+	"ayuphone_api/internal/routes"
+	"ayuphone_api/internal/services"
+	"log"
+	"os"
 
-    "github.com/gin-contrib/cors"
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-    config.LoadConfig()
-    dbClient, err := db.NewSQLiteDBClient()
-    if err != nil {
-        log.Fatalf("failed to initialize database: %v", err)
-    }
+	config.LoadConfig()
+	dbClient, err := db.NewSQLiteDBClient()
+	if err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
 
-    dbService := services.NewDBService(&dbClient)
+	dbService := services.NewDBService(&dbClient)
 
-    apiController := controllers.ApiController{
-        DbClient:  &dbClient,
-        DbService: dbService,
-    }
+	apiController := controllers.ApiController{
+		DbClient:  &dbClient,
+		DbService: dbService,
+	}
 
-    router := gin.Default()
+	router := gin.Default()
+	router.Use(CORSMiddleware())
+	routes.SetupRoutes(router, apiController)
 
-    // Configure CORS
-    router.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"http://localhost:3000", "http://10.0.2.2:3000"},
-        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-        AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-        ExposeHeaders:    []string{"Content-Length"},
-        AllowCredentials: true,
-    }))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if err := router.Run("0.0.0.0:" + port); err != nil {
+		log.Fatal("Failed to run server: ", err)
+	}
+}
 
-    routes.SetupRoutes(router, apiController)
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
 
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080"
-    }
-    if err := router.Run("0.0.0.0:" + port); err != nil {
-        log.Fatal("Failed to run server: ", err)
-    }
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }
