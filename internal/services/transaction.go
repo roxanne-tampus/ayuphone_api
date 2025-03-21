@@ -36,7 +36,7 @@ func (t DbService) GetTransactions(ctx context.Context, userID int64, filter str
 		}
 	} else {
 		rawQuery := `
-        SELECT t.id, t.status, t.pickup_address, t.full_address, d.brand, d.model, di.issue_description
+        SELECT t.id, t.status, t.pickup_address, t.full_address, d.brand, d.model, di.issue_description, t.created_at, t.updated_at
         FROM transactions as t
         LEFT JOIN devices AS d ON d.id = t.device_id
         LEFT JOIN device_issues AS di ON di.id = t.device_issue_id
