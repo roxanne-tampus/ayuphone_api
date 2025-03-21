@@ -49,3 +49,19 @@ func (ac ApiController) CheckRoleID(c *gin.Context, roleID int) bool {
 	}
 	return true
 }
+
+func (ac ApiController) GetUsers(c *gin.Context) {
+	if !ac.CheckRoleID(c, 1) && !ac.CheckRoleID(c, 2) {
+		utils.ErrorResponse(c, http.StatusUnauthorized, " Unauthorized")
+		return
+	}
+
+	// Fetch all users from the database
+	users, err := ac.DbService.GetUsers(c)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusUnauthorized, " Failed to get users")
+		return
+	}
+
+	utils.JSONResponse(c, true, "", users)
+}

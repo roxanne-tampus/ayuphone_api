@@ -163,6 +163,7 @@ SELECT
     d.brand,
     d.model,
     di.issue_description,
+    t.created_at,
     t.updated_at
 FROM
     transactions t

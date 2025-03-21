@@ -183,3 +183,50 @@ func (ac ApiController) DeleteOrganizationUser(c *gin.Context) {
 
 	utils.JSONResponse(c, true, "Organization user deleted", nil)
 }
+
+// InviteToOrganizationUser handles the creation of a new OrganizationUser
+func (ac ApiController) InviteToOrganizationUser(c *gin.Context) {
+	organizationID := c.Param("organization_id")
+	orgID, err := strconv.ParseInt(organizationID, 10, 64)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, " Invalid organization ID")
+		return
+	}
+	userIDParam := c.Param("user_id")
+	userID, err := strconv.ParseInt(userIDParam, 10, 64)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, " Invalid organization ID")
+		return
+	}
+
+	userIdString, _ := c.Get("user_id")
+	currentUser := userIdString.(int64)
+
+	if !ac.CheckRoleID(c, 1) && !ac.CheckRoleID(c, 2) {
+		utils.ErrorResponse(c, http.StatusUnauthorized, " Unauthorized")
+		return
+	}
+
+	// Fetch user from the database
+	user, err := ac.DbService.GetUserByID(c, userID)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusUnauthorized, " Failed to get user profile")
+		return
+	}
+
+	organizationUser := models.OrganizationUser{
+		UserID:         user.ID,
+		OrganizationID: orgID,
+		InvitedBy:      &currentUser,
+		RoleID:         user.RoleID,
+		Status:         "approved",
+	}
+
+	orgUserSuccess, err := ac.DbService.CreateOrganizationUser(c, &organizationUser)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, " Failed to create OrganizationUser")
+		return
+	}
+
+	utils.JSONResponse(c, true, "Organization user is created successfully", orgUserSuccess)
+}

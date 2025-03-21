@@ -38,3 +38,13 @@ func (u DbService) GetUserByID(ctx context.Context, userID int64) (*models.User,
 	}
 	return &user, nil
 }
+
+func (u DbService) GetUsers(ctx context.Context) (*[]models.User, error) {
+	user := &[]models.User{}
+	err := u.Client.DB.NewSelect().Model(user).Scan(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return user, nil
+}
