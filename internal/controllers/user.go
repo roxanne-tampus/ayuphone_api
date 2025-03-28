@@ -25,9 +25,12 @@ func (ac ApiController) GetProfile(c *gin.Context) {
 	}
 
 	utils.JSONResponse(c, true, "", gin.H{
-		"id":    user.ID,
-		"email": user.Email,
-		"role":  user.RoleID,
+		"id":         user.ID,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"phone":      user.PhoneNumber,
+		"email":      user.Email,
+		"role":       user.RoleID,
 	})
 }
 
